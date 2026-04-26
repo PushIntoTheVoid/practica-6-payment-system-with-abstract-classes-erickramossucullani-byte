@@ -1,0 +1,97 @@
+name: Autograding Tests
+
+"on":
+  - push
+  - repository_dispatch
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: PaymentMethod Test Case
+        id: paymentmethod-test-case
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: PaymentMethod Test Case
+          setup-command: rm -rf bin && mkdir -p bin && javac -cp "lib/junit-platform-console-standalone.jar" -d bin $(find src -name "*.java") tests/TestSupport.java
+          command: javac -cp "lib/junit-platform-console-standalone.jar:bin" -d bin tests/PaymentMethodTest.java && java -jar lib/junit-platform-console-standalone.jar --class-path bin --select-class tests.PaymentMethodTest
+          timeout: 10
+          max-score: 15
+
+      - name: CreditCard Test Case
+        id: creditcard-test-case
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: CreditCard Test Case
+          setup-command: ""
+          command: javac -cp "lib/junit-platform-console-standalone.jar:bin" -d bin tests/CreditCardTest.java && java -jar lib/junit-platform-console-standalone.jar --class-path bin --select-class tests.CreditCardTest
+          timeout: 10
+          max-score: 10
+
+      - name: PayPal Test Case
+        id: paypal-test-case
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: PayPal Test Case
+          setup-command: ""
+          command: javac -cp "lib/junit-platform-console-standalone.jar:bin" -d bin tests/PayPalTest.java && java -jar lib/junit-platform-console-standalone.jar --class-path bin --select-class tests.PayPalTest
+          timeout: 10
+          max-score: 10
+
+      - name: CryptoPayment Test Case
+        id: cryptopayment-test-case
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: CryptoPayment Test Case
+          setup-command: ""
+          command: javac -cp "lib/junit-platform-console-standalone.jar:bin" -d bin tests/CryptoPaymentTest.java && java -jar lib/junit-platform-console-standalone.jar --class-path bin --select-class tests.CryptoPaymentTest
+          timeout: 10
+          max-score: 15
+
+      - name: CashPayment Test Case
+        id: cashpayment-test-case
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: CashPayment Test Case
+          setup-command: ""
+          command: javac -cp "lib/junit-platform-console-standalone.jar:bin" -d bin tests/CashPaymentTest.java && java -jar lib/junit-platform-console-standalone.jar --class-path bin --select-class tests.CashPaymentTest
+          timeout: 10
+          max-score: 15
+
+      - name: Store Test Case
+        id: store-test-case
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Store Test Case
+          setup-command: ""
+          command: javac -cp "lib/junit-platform-console-standalone.jar:bin" -d bin tests/StoreTest.java && java -jar lib/junit-platform-console-standalone.jar --class-path bin --select-class tests.StoreTest
+          timeout: 10
+          max-score: 35
+
+      - name: Autograding Reporter
+        uses: classroom-resources/autograding-grading-reporter@v1
+        env:
+          PAYMENTMETHOD-TEST-CASE_RESULTS: "${{ steps.paymentmethod-test-case.outputs.result }}"
+          CREDITCARD-TEST-CASE_RESULTS: "${{ steps.creditcard-test-case.outputs.result }}"
+          PAYPAL-TEST-CASE_RESULTS: "${{ steps.paypal-test-case.outputs.result }}"
+          CRYPTOPAYMENT-TEST-CASE_RESULTS: "${{ steps.cryptopayment-test-case.outputs.result }}"
+          CASHPAYMENT-TEST-CASE_RESULTS: "${{ steps.cashpayment-test-case.outputs.result }}"
+          STORE-TEST-CASE_RESULTS: "${{ steps.store-test-case.outputs.result }}"
+        with:
+          runners: paymentmethod-test-case,creditcard-test-case,paypal-test-case,cryptopayment-test-case,cashpayment-test-case,store-test-case
